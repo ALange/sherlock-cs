@@ -57,7 +57,7 @@ public static class McpServerRunner
 
         var builder = WebApplication.CreateBuilder();
 
-        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
 
         builder.Services.AddSingleton(sites);
         builder.Services.AddSingleton(opts);
