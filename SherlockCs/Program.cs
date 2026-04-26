@@ -3,6 +3,7 @@ using System.Text.Json;
 using CommandLine;
 using CsvHelper;
 using ClosedXML.Excel;
+using SherlockCs.Mcp;
 using SherlockCs.Models;
 using SherlockCs.Notify;
 using SherlockCs.Sites;
@@ -78,6 +79,14 @@ internal static class Program
 
     public static async Task<int> Main(string[] args)
     {
+        if (args.Length > 0 && args[0].Equals("mcp", StringComparison.OrdinalIgnoreCase))
+        {
+            var mcpParseResult = Parser.Default.ParseArguments<McpOptions>(args[1..]);
+            int mcpExitCode = 0;
+            await mcpParseResult.WithParsedAsync(async opts => mcpExitCode = await McpServerRunner.RunAsync(opts));
+            return mcpParseResult.Tag == ParserResultType.NotParsed ? 1 : mcpExitCode;
+        }
+
         var parseResult = Parser.Default.ParseArguments<Options>(args);
         int exitCode = 0;
         await parseResult.WithParsedAsync(async opts => exitCode = await RunAsync(opts));
