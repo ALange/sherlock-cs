@@ -274,7 +274,7 @@ public class SherlockMcpToolsTests
     [Fact]
     public void ListSites_NoFilter_ReturnsSites()
     {
-        var tools = new SherlockMcpTools(LoadLocalSites());
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
         var json = tools.ListSites();
         var doc = JsonDocument.Parse(json);
         Assert.True(doc.RootElement.GetProperty("total").GetInt32() > 0);
@@ -284,7 +284,7 @@ public class SherlockMcpToolsTests
     [Fact]
     public void ListSites_WithFilter_ReturnsFilteredSites()
     {
-        var tools = new SherlockMcpTools(LoadLocalSites());
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
         // Use lowercase to verify case-insensitive prefix filtering
         var json = tools.ListSites("git");
         var doc = JsonDocument.Parse(json);
@@ -297,7 +297,7 @@ public class SherlockMcpToolsTests
     [Fact]
     public void ListSites_WithNonMatchingFilter_ReturnsEmpty()
     {
-        var tools = new SherlockMcpTools(LoadLocalSites());
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
         var json = tools.ListSites("ZZZZZNOTASITE");
         var doc = JsonDocument.Parse(json);
         Assert.Equal(0, doc.RootElement.GetProperty("total").GetInt32());
@@ -306,7 +306,7 @@ public class SherlockMcpToolsTests
     [Fact]
     public async Task SearchUsername_EmptyUsername_ReturnsError()
     {
-        var tools = new SherlockMcpTools(LoadLocalSites());
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
         var json = await tools.SearchUsername("   ");
         var doc = JsonDocument.Parse(json);
         Assert.True(doc.RootElement.TryGetProperty("error", out _));
@@ -315,7 +315,7 @@ public class SherlockMcpToolsTests
     [Fact]
     public async Task SearchUsername_UnknownSite_ReturnsError()
     {
-        var tools = new SherlockMcpTools(LoadLocalSites());
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
         var json = await tools.SearchUsername("testuser", sites: "ZZZZZNOTASITE");
         var doc = JsonDocument.Parse(json);
         Assert.True(doc.RootElement.TryGetProperty("error", out _));

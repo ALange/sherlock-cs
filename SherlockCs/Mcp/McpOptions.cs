@@ -21,4 +21,7 @@ public class McpOptions
 
     [Option("ignore-exclusions", Default = false, HelpText = "Ignore upstream exclusions (may return more false positives).")]
     public bool IgnoreExclusions { get; set; }
+
+    [Option("timeout", Default = 60.0, HelpText = "Time (in seconds) to wait for response to requests (Default: 60)")]
+    public double Timeout { get; set; } = 60.0;
 }

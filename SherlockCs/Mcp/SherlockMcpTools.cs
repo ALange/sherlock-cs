@@ -8,9 +8,10 @@ using SherlockCs.Sites;
 namespace SherlockCs.Mcp;
 
 [McpServerToolType]
-public class SherlockMcpTools(SitesInformation sites)
+public class SherlockMcpTools(SitesInformation sites, McpOptions mcpOptions)
 {
     private readonly SitesInformation _sites = sites;
+    private readonly double _defaultTimeout = mcpOptions.Timeout;
 
     [McpServerTool]
     [Description("Search for a username across 400+ social networks and return every site where the account was found.")]
@@ -18,7 +19,7 @@ public class SherlockMcpTools(SitesInformation sites)
         [Description("The username to search for.")] string username,
         [Description("Comma-separated list of site names to limit the search to. Leave empty to check all sites.")] string? sites = null,
         [Description("Proxy URL to route requests through (e.g. socks5://127.0.0.1:1080).")] string? proxy = null,
-        [Description("Request timeout in seconds (default: 60).")] double timeout = 60.0,
+        [Description("Request timeout in seconds. Use -1 (or omit) to apply the server's configured default timeout.")] double timeout = -1,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(username))
@@ -60,7 +61,7 @@ public class SherlockMcpTools(SitesInformation sites)
             siteData,
             notify,
             proxy: proxy,
-            timeout: timeout);
+            timeout: timeout <= 0 ? _defaultTimeout : timeout);
 
         var found = results
             .Where(r => r.Value.Status?.Status == QueryStatus.Claimed)

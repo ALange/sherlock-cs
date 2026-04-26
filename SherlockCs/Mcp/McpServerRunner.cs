@@ -60,6 +60,7 @@ public static class McpServerRunner
         builder.Logging.ClearProviders();
 
         builder.Services.AddSingleton(sites);
+        builder.Services.AddSingleton(opts);
 
         builder.Services
             .AddMcpServer()
