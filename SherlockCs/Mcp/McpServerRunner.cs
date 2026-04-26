@@ -77,7 +77,7 @@ public static class McpServerRunner
 
         var app = builder.Build();
 
-        app.MapMcp();
+        app.MapMcp("/mcp");
 
         Console.WriteLine($"Sherlock MCP server listening on http://{opts.Host}:{opts.Port}");
         Console.WriteLine($"Loaded {sites.Count} sites.");
