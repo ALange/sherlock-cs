@@ -276,7 +276,7 @@ public class SherlockMcpToolsTests
     {
         var tools = new SherlockMcpTools(LoadLocalSites());
         var json = tools.ListSites();
-        var doc = System.Text.Json.JsonDocument.Parse(json);
+        var doc = JsonDocument.Parse(json);
         Assert.True(doc.RootElement.GetProperty("total").GetInt32() > 0);
         Assert.Equal(JsonValueKind.Array, doc.RootElement.GetProperty("sites").ValueKind);
     }
@@ -285,12 +285,13 @@ public class SherlockMcpToolsTests
     public void ListSites_WithFilter_ReturnsFilteredSites()
     {
         var tools = new SherlockMcpTools(LoadLocalSites());
-        var json = tools.ListSites("Git");
-        var doc = System.Text.Json.JsonDocument.Parse(json);
+        // Use lowercase to verify case-insensitive prefix filtering
+        var json = tools.ListSites("git");
+        var doc = JsonDocument.Parse(json);
         var sites = doc.RootElement.GetProperty("sites");
         Assert.True(doc.RootElement.GetProperty("total").GetInt32() > 0);
         foreach (var site in sites.EnumerateArray())
-            Assert.StartsWith("Git", site.GetString(), StringComparison.OrdinalIgnoreCase);
+            Assert.StartsWith("git", site.GetString(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -298,7 +299,7 @@ public class SherlockMcpToolsTests
     {
         var tools = new SherlockMcpTools(LoadLocalSites());
         var json = tools.ListSites("ZZZZZNOTASITE");
-        var doc = System.Text.Json.JsonDocument.Parse(json);
+        var doc = JsonDocument.Parse(json);
         Assert.Equal(0, doc.RootElement.GetProperty("total").GetInt32());
     }
 
@@ -307,7 +308,7 @@ public class SherlockMcpToolsTests
     {
         var tools = new SherlockMcpTools(LoadLocalSites());
         var json = await tools.SearchUsername("   ");
-        var doc = System.Text.Json.JsonDocument.Parse(json);
+        var doc = JsonDocument.Parse(json);
         Assert.True(doc.RootElement.TryGetProperty("error", out _));
     }
 
@@ -316,7 +317,7 @@ public class SherlockMcpToolsTests
     {
         var tools = new SherlockMcpTools(LoadLocalSites());
         var json = await tools.SearchUsername("testuser", sites: "ZZZZZNOTASITE");
-        var doc = System.Text.Json.JsonDocument.Parse(json);
+        var doc = JsonDocument.Parse(json);
         Assert.True(doc.RootElement.TryGetProperty("error", out _));
     }
 }
