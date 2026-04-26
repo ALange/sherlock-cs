@@ -19,6 +19,12 @@ __pycache__/
 # Pip
 src/
 
+# .NET build artifacts
+SherlockCs/obj/
+SherlockCs.Tests/obj/
+SherlockCs/bin/
+SherlockCs.Tests/bin/
+
 # Devel, Build, and Installation
 *.egg-info/
 dist/**
