@@ -1,5 +1,7 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using SherlockCs;
+using SherlockCs.Mcp;
 using SherlockCs.Models;
 using SherlockCs.Notify;
 using SherlockCs.Sites;
@@ -256,6 +258,66 @@ public class SitesInformationJsonParseTests
     public void JsonNodeToObject_HandlesNull()
     {
         Assert.Null(SitesInformation.JsonNodeToObject(null));
+    }
+}
+
+public class SherlockMcpToolsTests
+{
+    private static SitesInformation LoadLocalSites()
+    {
+        var localPath = Path.Combine(
+            Path.GetDirectoryName(typeof(SherlockMcpToolsTests).Assembly.Location)!,
+            "..", "..", "..", "..", "SherlockCs", "resources", "data.json");
+        return new SitesInformation(Path.GetFullPath(localPath), honorExclusions: false);
+    }
+
+    [Fact]
+    public void ListSites_NoFilter_ReturnsSites()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites());
+        var json = tools.ListSites();
+        var doc = System.Text.Json.JsonDocument.Parse(json);
+        Assert.True(doc.RootElement.GetProperty("total").GetInt32() > 0);
+        Assert.Equal(JsonValueKind.Array, doc.RootElement.GetProperty("sites").ValueKind);
+    }
+
+    [Fact]
+    public void ListSites_WithFilter_ReturnsFilteredSites()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites());
+        var json = tools.ListSites("Git");
+        var doc = System.Text.Json.JsonDocument.Parse(json);
+        var sites = doc.RootElement.GetProperty("sites");
+        Assert.True(doc.RootElement.GetProperty("total").GetInt32() > 0);
+        foreach (var site in sites.EnumerateArray())
+            Assert.StartsWith("Git", site.GetString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ListSites_WithNonMatchingFilter_ReturnsEmpty()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites());
+        var json = tools.ListSites("ZZZZZNOTASITE");
+        var doc = System.Text.Json.JsonDocument.Parse(json);
+        Assert.Equal(0, doc.RootElement.GetProperty("total").GetInt32());
+    }
+
+    [Fact]
+    public async Task SearchUsername_EmptyUsername_ReturnsError()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites());
+        var json = await tools.SearchUsername("   ");
+        var doc = System.Text.Json.JsonDocument.Parse(json);
+        Assert.True(doc.RootElement.TryGetProperty("error", out _));
+    }
+
+    [Fact]
+    public async Task SearchUsername_UnknownSite_ReturnsError()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites());
+        var json = await tools.SearchUsername("testuser", sites: "ZZZZZNOTASITE");
+        var doc = System.Text.Json.JsonDocument.Parse(json);
+        Assert.True(doc.RootElement.TryGetProperty("error", out _));
     }
 }
 

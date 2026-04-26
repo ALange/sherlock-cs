@@ -176,20 +176,25 @@ List all social network sites available for searching.
 
 ### Configure in Claude Desktop
 
-Add the following to your Claude Desktop `claude_desktop_config.json`:
+First, start the server:
+
+```bash
+SherlockCs mcp --port 5000
+```
+
+Then add the following to your Claude Desktop `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "sherlock": {
-      "command": "/path/to/SherlockCs",
-      "args": ["mcp", "--port", "5000"]
+      "url": "http://localhost:5000/mcp"
     }
   }
 }
 ```
 
-> **Note:** Claude Desktop launches the process itself, so `--host localhost` is the appropriate default.
+> **Note:** The server uses the Streamable HTTP transport, so Claude Desktop must connect via `url`. Start the server process before launching Claude Desktop.
 
 ---
 
