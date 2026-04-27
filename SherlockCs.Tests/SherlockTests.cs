@@ -320,6 +320,33 @@ public class SherlockMcpToolsTests
         var doc = JsonDocument.Parse(json);
         Assert.True(doc.RootElement.TryGetProperty("error", out _));
     }
+
+    [Fact]
+    public async Task SearchUsernameOnSite_EmptyUsername_ReturnsError()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
+        var json = await tools.SearchUsernameOnSite("   ", "GitHub");
+        var doc = JsonDocument.Parse(json);
+        Assert.True(doc.RootElement.TryGetProperty("error", out _));
+    }
+
+    [Fact]
+    public async Task SearchUsernameOnSite_EmptySite_ReturnsError()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
+        var json = await tools.SearchUsernameOnSite("testuser", "   ");
+        var doc = JsonDocument.Parse(json);
+        Assert.True(doc.RootElement.TryGetProperty("error", out _));
+    }
+
+    [Fact]
+    public async Task SearchUsernameOnSite_UnknownSite_ReturnsError()
+    {
+        var tools = new SherlockMcpTools(LoadLocalSites(), new McpOptions());
+        var json = await tools.SearchUsernameOnSite("testuser", "ZZZZZNOTASITE");
+        var doc = JsonDocument.Parse(json);
+        Assert.True(doc.RootElement.TryGetProperty("error", out _));
+    }
 }
 
 /// <summary>

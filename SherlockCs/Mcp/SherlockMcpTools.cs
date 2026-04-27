@@ -81,6 +81,55 @@ public class SherlockMcpTools(SitesInformation sites, McpOptions mcpOptions)
     }
 
     [McpServerTool]
+    [Description("Search for a username on a single specific social network site and return the detailed result.")]
+    public async Task<string> SearchUsernameOnSite(
+        [Description("The username to search for.")] string username,
+        [Description("The exact name of the site to search (use ListSites to discover valid names).")] string site,
+        [Description("Proxy URL to route requests through (e.g. socks5://127.0.0.1:1080).")] string? proxy = null,
+        [Description("Request timeout in seconds. Use -1 (or omit) to apply the server's configured default timeout.")] double timeout = -1,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            return JsonSerializer.Serialize(new { error = "username must not be empty." });
+
+        if (string.IsNullOrWhiteSpace(site))
+            return JsonSerializer.Serialize(new { error = "site must not be empty." });
+
+        var siteDataAll = _sites.Sites.ToDictionary(
+            kv => kv.Key,
+            kv => kv.Value.Information,
+            StringComparer.OrdinalIgnoreCase);
+
+        if (!siteDataAll.TryGetValue(site, out var siteInfo))
+            return JsonSerializer.Serialize(new { error = $"Site '{site}' not found. Use ListSites to see available sites." });
+
+        var siteData = new Dictionary<string, Dictionary<string, object?>> { [site] = siteInfo };
+
+        var notify = new QueryNotify();
+        var results = await SherlockSearch.RunAsync(
+            username,
+            siteData,
+            notify,
+            proxy: proxy,
+            timeout: timeout <= 0 ? _defaultTimeout : timeout);
+
+        if (!results.TryGetValue(site, out var result))
+            return JsonSerializer.Serialize(new { error = $"No result returned for site '{site}'." });
+
+        var summary = new
+        {
+            username,
+            site,
+            url = result.UrlUser,
+            status = result.Status?.Status.ToDisplayString() ?? "Unknown",
+            http_status = result.HttpStatus,
+            response_time_s = result.Status?.QueryTime
+        };
+
+        return JsonSerializer.Serialize(summary, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    [McpServerTool]
     [Description("List all social network sites that can be searched.")]
     public string ListSites(
         [Description("Optional name prefix to filter results (case-insensitive). Leave empty to list all sites.")] string? filter = null)
