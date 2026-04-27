@@ -113,7 +113,9 @@ public class SherlockMcpTools(SitesInformation sites, McpOptions mcpOptions)
             proxy: proxy,
             timeout: timeout <= 0 ? _defaultTimeout : timeout);
 
-        var result = results[site];
+        if (!results.TryGetValue(site, out var result))
+            return JsonSerializer.Serialize(new { error = $"No result returned for site '{site}'." });
+
         var summary = new
         {
             username,
